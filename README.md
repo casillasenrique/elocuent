@@ -54,6 +54,8 @@ npx elocuent --spaces 2
 | `-d`, `--dir` | Comma-separated list of directories to search. **Will be ignored if `-i`/`--input` is present.** | `src` |
 | `-t`, `--types` | Comma-separated list of file types to search. **Will be ignored if `-i`/`--input` is present.** | `html,css,js,svelte` |
 | `-s`, `--spaces` | If using spaces for indentation, number of spaces to use | `false` (use tabs) |
+| `--verbose` | Show verbose output |  |
+| `--dry-run` | Do not write to file. Also enables verbose output |  |
 | `-h`, `--help` | Show help |  |
 
 ## CSV Metadata
