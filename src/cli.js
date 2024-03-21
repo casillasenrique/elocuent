@@ -28,8 +28,6 @@ program
 	.option("--dry-run", "Do not write to file. Also enables verbose output")
 	;
 
-
-
 program.action(() => {
 	const options = program.opts();
 	// console.log(options);
