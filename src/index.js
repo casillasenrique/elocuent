@@ -3,11 +3,19 @@ import { spawn } from "child_process";
 import { createInterface } from 'readline';
 import { globSync } from "glob";
 
-const OUTPUT_FILE = "static/loc.csv";
-const INPUT_FILES = "{src,static}/**/*.{svelte,css,html,js}";
-const INDENT = "	";
+import parseLine from "./parse-line.js";
+import defaults from "./defaults.js";
 
-export default function({input = INPUT_FILES, out = OUTPUT_FILE, indent = INDENT}) {
+
+
+export default async function (options = {}) {
+
+	options = Object.assign({}, defaults, options);
+	let input = options.input ?? `{${options.dirs}}/**/*.{${options.types}}`;
+	console.log(input);
+	let out = options.output;
+
+	// Read input files
 	const files = globSync(input);
 
 	if (files.length === 0) {
@@ -15,7 +23,9 @@ export default function({input = INPUT_FILES, out = OUTPUT_FILE, indent = INDENT
 		process.exit(1);
 	}
 
-	const stream = createWriteStream(output);
+	const indent = options.spaces ? " ".repeat(options.spaces === true ? 2 : options.spaces) : "\t";
+
+	const stream = createWriteStream(out);
 	let wroteHeader = false;
 	let totalLines = 0;
 
@@ -31,48 +41,9 @@ export default function({input = INPUT_FILES, out = OUTPUT_FILE, indent = INDENT
 
 		for await (let line of rl) {
 			totalLines++;
-			let info = {file, line: index++, type};
-
-			if (line.startsWith("^")) {
-				line = line.slice(1);
-			}
-
-			info.commit = line.match(/^[0-9a-f]{6,}/i)[0];
-			line = line.slice(info.commit.length + 1);
-
-			let commitInfo = line.match(/^.*?\((?<author>.+?) (?<date>\d{4}-\d{2}-\d{2}) (?<time>\d{2}:\d{2}:\d{2}) (?<timezone>-?\d{4})\s+\d+\) /);
-			if (commitInfo === null) {
-				console.error("No match for", line);
-			}
-
-			info.author = commitInfo.groups.author;
-
-			info.date = commitInfo.groups.date;
-			info.time = commitInfo.groups.time;
-			info.timezone = commitInfo.groups.timezone.slice(0, 3) + ":" + commitInfo.groups.timezone.slice(3);
-			info.datetime = commitInfo.groups.date + "T" + info.time + info.timezone;
-			// Object.assign(info, commitInfo.groups);
-
-			line = line.slice(commitInfo[0].length);
-
-			let lineIndent = line.match(RegExp(`^(${indent})*`))[0]; // will always match something due to the *
-			info.depth = lineIndent.length / indent.length;
-
-			line = line.trim();
-
-			if (fileType === "svelte") {
-				if (line === "<style>") {
-					type = "css";
-				}
-				else if (line === "<script>") {
-					type = "js";
-				}
-				else if (/<\/style>|<\/script>/.test(line)) {
-					info.type = type = fileType;
-				}
-			}
-
-			info.length = line.slice(indent.length).length;
+			let context = {index: index++, fileType, type, indent};
+			let info = parseLine(line, context);
+			type = context.type;
 
 			if (!wroteHeader) {
 				stream.write(Object.keys(info).join(",") + "\n");
@@ -85,7 +56,7 @@ export default function({input = INPUT_FILES, out = OUTPUT_FILE, indent = INDENT
 		gitBlame.kill();
 	}
 
-	console.info(`Analyzed a total of ${totalLines} lines of code in ${files.length} files. Results written to ${OUTPUT_FILE}`);
+	console.info(`Analyzed a total of ${totalLines} lines of code in ${files.length} files. Results written to ${out}`);
 
 	stream.end();
 }
