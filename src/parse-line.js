@@ -1,5 +1,5 @@
 export default function (line, context = {}) {
-	let {index, fileType, type} = context;
+	let {index, file, fileType, type, indent} = context;
 	let ret = {file, line: index, type};
 
 	if (line.startsWith("^")) {

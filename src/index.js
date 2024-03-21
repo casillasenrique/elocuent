@@ -12,7 +12,6 @@ export default async function (options = {}) {
 
 	options = Object.assign({}, defaults, options);
 	let input = options.input ?? `{${options.dirs}}/**/*.{${options.types}}`;
-	console.log(input);
 	let out = options.output;
 
 	// Read input files
@@ -23,7 +22,7 @@ export default async function (options = {}) {
 		process.exit(1);
 	}
 
-	const indent = options.spaces ? " ".repeat(options.spaces === true ? 2 : options.spaces) : "\t";
+	options.indent ??= options.spaces ? " ".repeat(options.spaces === true ? 2 : options.spaces) : "\t";
 
 	const stream = createWriteStream(out);
 	let wroteHeader = false;
@@ -41,7 +40,7 @@ export default async function (options = {}) {
 
 		for await (let line of rl) {
 			totalLines++;
-			let context = {index: index++, fileType, type, indent};
+			let context = {file, index: index++, fileType, type, indent};
 			let info = parseLine(line, context);
 			type = context.type;
 
