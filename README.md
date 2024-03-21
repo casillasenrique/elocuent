@@ -50,12 +50,13 @@ npx elocuent --spaces 2
 | Option | Description | Default |
 | --- | --- | --- |
 | `-i`, `--input` | Glob pattern for input files |  |
-| `-o`, `--output` | Output file | `loc.csv` |
+| `-o`, `--output` | Output file path. Any directories need to exist or you’ll get an error. | `loc.csv` |
 | `-d`, `--dir` | Comma-separated list of directories to search. **Will be ignored if `-i`/`--input` is present.** | `src` |
 | `-t`, `--types` | Comma-separated list of file types to search. **Will be ignored if `-i`/`--input` is present.** | `html,css,js,svelte` |
 | `-s`, `--spaces` | If using spaces for indentation, number of spaces to use | `false` (use tabs) |
 | `--verbose` | Show verbose output |  |
 | `--dry-run` | Do not write to file. Also enables verbose output |  |
+| `--blame-out` | Path to a file to write the output of `git blame` to. Useful for debugging. |  |
 | `-h`, `--help` | Show help |  |
 
 ## CSV Metadata

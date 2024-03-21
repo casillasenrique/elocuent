@@ -26,6 +26,7 @@ program
 	.option("--spaces <spaces>", "Number of spaces to use for indentation. If missing or falsy, tabs are assumed.", defaults.spaces)
 	.option("--verbose", "Verbose output")
 	.option("--dry-run", "Do not write to file. Also enables verbose output")
+	.option("--blame-out <blameOut>", "File to write the output of git blame to (mainly useful for debugging)")
 	;
 
 program.action(() => {

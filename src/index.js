@@ -46,7 +46,16 @@ export default async function (options = {}) {
 		console.info("Files to be read:", files);
 	}
 
-	const stream = options.dryRun ? null : createWriteStream(options.output);
+	let stream, blameStream;
+
+	if (!options.dryRun) {
+		stream = createWriteStream(options.output);
+
+		if (options.blameOut) {
+			blameStream = createWriteStream(options.blameOut);
+		}
+	}
+
 	let wroteHeader = false;
 	let totalLines = 0;
 
@@ -60,23 +69,22 @@ export default async function (options = {}) {
 		let fileType = file.split(".").pop();
 		let type = fileType;
 
+		blameStream?.write(`${i > 0? "\n" : ""}File: ${file}\n${"-".repeat(file.length + 7)}\n\n`)
+
 		for await (let line of rl) {
+			blameStream?.write(line + "\n");
 			totalLines++;
 			let context = {file, index: index++, fileType, type, indent: options.indent};
 			let info = parseLine(line, context);
 			type = context.type;
 
 			if (!wroteHeader) {
-				if (!options.dryRun) {
-					stream.write(Object.keys(info).join(",") + "\n");
-				}
+				stream?.write(Object.keys(info).join(",") + "\n");
 
 				wroteHeader = true;
 			}
 
-			if (!options.dryRun) {
-				stream.write(Object.values(info).join(",") + "\n");
-			}
+			stream?.write(Object.values(info).join(",") + "\n");
 		}
 
 		gitBlame.kill();
@@ -84,7 +92,6 @@ export default async function (options = {}) {
 
 	console.info(`Analyzed a total of ${totalLines} lines of code in ${files.length} files. Results written to ${options.output}`);
 
-	if (!options.dryRun) {
-		stream.end();
-	}
+	stream?.end();
+	blameStream?.end();
 }
