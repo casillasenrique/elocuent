@@ -11,7 +11,7 @@ function resolveOptions(options) {
 
 	if (!options.input) {
 		// Generate glob from dirs and types
-		let dirGlob = options.dirs.includes(",")? `{${options.dirs}}` : options.dirs;
+		let dirGlob = options.dir.includes(",")? `{${options.dir}}` : options.dir;
 		let typeGlob = options.types.includes(",")? `{${options.types}}` : options.types;
 		options.input = `${dirGlob}/**/*.${typeGlob}`;
 	}
