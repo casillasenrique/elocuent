@@ -1,6 +1,6 @@
 {
   "name": "elocuent",
-  "version": "0.0.1-alpha.3",
+  "version": "0.0.1",
   "description": "A command-line script to analyze the lines of code in your repo",
   "type": "module",
   "main": "src/index.js",
