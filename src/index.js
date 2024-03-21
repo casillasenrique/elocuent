@@ -6,25 +6,47 @@ import { globSync } from "glob";
 import parseLine from "./parse-line.js";
 import defaults from "./defaults.js";
 
+function resolveOptions(options) {
+	options = Object.assign({}, defaults, options);
 
+	if (!options.input) {
+		// Generate glob from dirs and types
+		let dirGlob = options.dirs.includes(",")? `{${options.dirs}}` : options.dirs;
+		let typeGlob = options.types.includes(",")? `{${options.types}}` : options.types;
+		options.input = `${dirGlob}/**/*.${typeGlob}`;
+	}
+
+	options.indent ??= options.spaces ? " ".repeat(options.spaces === true ? 2 : options.spaces) : "\t";
+	return options;
+}
 
 export default async function (options = {}) {
+	let originalOptions = options;
+	options = resolveOptions(originalOptions);
 
-	options = Object.assign({}, defaults, options);
-	let input = options.input ?? `{${options.dirs}}/**/*.{${options.types}}`;
-	let out = options.output;
+	if (options.dryRun) {
+		console.info("Dry run. No files will be written.");
+		options.verbose = true;
+	}
+
+	if (options.verbose) {
+		console.info("Options:", originalOptions);
+		console.info("Resolved options:", options);
+	}
 
 	// Read input files
-	const files = globSync(input);
+	const files = globSync(options.input);
 
 	if (files.length === 0) {
 		console.error("No files found");
 		process.exit(1);
 	}
 
-	options.indent ??= options.spaces ? " ".repeat(options.spaces === true ? 2 : options.spaces) : "\t";
+	if (options.verbose) {
+		console.info("Files to be read:", files);
+	}
 
-	const stream = createWriteStream(out);
+	const stream = options.dryRun ? null : createWriteStream(options.output);
 	let wroteHeader = false;
 	let totalLines = 0;
 
@@ -40,22 +62,29 @@ export default async function (options = {}) {
 
 		for await (let line of rl) {
 			totalLines++;
-			let context = {file, index: index++, fileType, type, indent};
+			let context = {file, index: index++, fileType, type, indent: options.indent};
 			let info = parseLine(line, context);
 			type = context.type;
 
 			if (!wroteHeader) {
-				stream.write(Object.keys(info).join(",") + "\n");
+				if (!options.dryRun) {
+					stream.write(Object.keys(info).join(",") + "\n");
+				}
+
 				wroteHeader = true;
 			}
 
-			stream.write(Object.values(info).join(",") + "\n");
+			if (!options.dryRun) {
+				stream.write(Object.values(info).join(",") + "\n");
+			}
 		}
 
 		gitBlame.kill();
 	}
 
-	console.info(`Analyzed a total of ${totalLines} lines of code in ${files.length} files. Results written to ${out}`);
+	console.info(`Analyzed a total of ${totalLines} lines of code in ${files.length} files. Results written to ${options.output}`);
 
-	stream.end();
+	if (!options.dryRun) {
+		stream.end();
+	}
 }

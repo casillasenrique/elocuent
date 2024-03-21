@@ -23,7 +23,10 @@ program
 	.option("-o, --output <output>", "Output file", defaults.output)
 	.option("-d, --dir <dir>", "Comma-separated list of directories to search. Cannot be used together with -i", defaults.dirs)
 	.option("-t, --types <types>", "Comma-separated list of file types to search for. Cannot be used together with -i", defaults.types)
-	.option("--spaces <spaces>", "Number of spaces to use for indentation. Assumes tabs for indentation if falsy.", defaults.spaces);
+	.option("--spaces <spaces>", "Number of spaces to use for indentation. If missing or falsy, tabs are assumed.", defaults.spaces)
+	.option("-v, --verbose", "Verbose output")
+	.option("--dry-run", "Do not write to file. Also enables verbose output")
+	;
 
 
 
