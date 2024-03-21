@@ -6,14 +6,46 @@ It works by running `git blame`, then parsing the output.
 Originally written as a package for students of MIT’s Interactive visualization & Society course to use in one of the labs,
 so it’s not very robust or flexible in the general case, but PRs are welcome.
 
+## Installation
+
+```bash
+npm install elocuent
+```
+
+You can also install globally:
+
+```bash
+npm install -g elocuent
+```
+
 ## Usage
 
 Use all defaults:
 ```bash
-npx eloquent
+npx elocuent
 ```
 
-Options:
+Use a custom glob for input
+```bash
+npx elocuent -i "src/**/*.js,!src/index.js"
+```
+
+Custom directory and file type (cannot be combined with `-i`/`--input`):
+```bash
+npx elocuent -d "src,static" -t "html,css,js,svelte"
+```
+
+Custom output file:
+```bash
+npx elocuent -o "loc.csv"
+```
+
+Spaces for indentation:
+```bash
+npx elocuent --spaces 2
+```
+
+### All CLI Options
 
 | Option | Description | Default |
 | --- | --- | --- |
@@ -27,12 +59,31 @@ Options:
 ## CSV Metadata
 
 The metadata stored in the CSV is:
-- `file`: the file the line is from
-- `line`: the line number
-- `type`: The type of code (`"html"`, `"css"`, `"js"`, `"svelte"`). CSS and JS defined in Svelte files is recognized as HTML and CSS, so `"svelte"` is only used for the HTML in Svelte files.
-- `commit`: The identifier *(SHA hash)* of the commit that last changed this line
-- `date`, `time`, `timezone`: The date, time, and timezone respectively that the commit was made
-- `datetime`: The full date and time (including timezone) in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format
-- `author`: The full name of the author of the last commit that changed this line. For your own website this will likely be your own name on every line.
-- `depth`: the indentation level of the line
-- `length`: the number of characters in the line after trimming (i.e. excluding whitespace at the start and end).
+
+| Field | Description |
+| --- | --- |
+| `file` | The file the line is from |
+| `line` | The line number |
+| `type` | The type of code (`"html"`, `"css"`, `"js"`, `"svelte"`) |
+| `commit` | The identifier *(SHA hash)* of the commit that last changed this line |
+| `date` | The date the commit was made |
+| `time` | The time the commit was made |
+| `timezone` | The timezone the commit was made |
+| `datetime` | The full date and time (including timezone) in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format |
+| `author` | The full name of the author of the last commit that changed this line |
+| `depth` | The indentation level of the line |
+| `length` | The number of characters in the line after trimming (i.e. excluding whitespace at the start and end) |
+
+## JS API
+
+You can also use eʟᴏᴄuent as a JS module:
+
+```js
+import elocuent from "elocuent";
+
+elocuent({
+	input: "src/**/*.js,!src/index.js",
+	output: "loc.csv",
+	spaces: 2
+});
+```
